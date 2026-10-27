@@ -1,0 +1,1672 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Day-ahead Wind Forecast API",
+    "summary": "Day-ahead wind forecast decision support (Elexon WINDFOR vs FUELHH).",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "ops"
+        ],
+        "summary": "Health",
+        "description": "Liveness and a quick sanity count of loaded data.",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/meta": {
+      "get": {
+        "tags": [
+          "v1"
+        ],
+        "summary": "Meta",
+        "description": "Scope, defaults, assumptions and data provenance.",
+        "operationId": "meta_api_v1_meta_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decision-days": {
+      "get": {
+        "tags": [
+          "v1"
+        ],
+        "summary": "Decision Days",
+        "description": "Every supported decision day and the forecast issue that would be selected.",
+        "operationId": "decision_days_api_v1_decision_days_get",
+        "parameters": [
+          {
+            "name": "cutoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Local UK gate-closure time, HH:MM. Defaults to the configured cutoff (09:50, the N2EX GB day-ahead auction).",
+              "examples": [
+                "09:50",
+                "09:20"
+              ],
+              "title": "Cutoff"
+            },
+            "description": "Local UK gate-closure time, HH:MM. Defaults to the configured cutoff (09:50, the N2EX GB day-ahead auction)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionDaysDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/forecast": {
+      "get": {
+        "tags": [
+          "v1"
+        ],
+        "summary": "Forecast",
+        "description": "Client question 1: the latest forecast available at the cutoff, plus context.",
+        "operationId": "forecast_api_v1_forecast_get",
+        "parameters": [
+          {
+            "name": "decision_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "description": "Day the desk bids (YYYY-MM-DD).",
+              "title": "Decision Date"
+            },
+            "description": "Day the desk bids (YYYY-MM-DD)."
+          },
+          {
+            "name": "cutoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Local UK gate-closure time, HH:MM. Defaults to the configured cutoff (09:50, the N2EX GB day-ahead auction).",
+              "examples": [
+                "09:50",
+                "09:20"
+              ],
+              "title": "Cutoff"
+            },
+            "description": "Local UK gate-closure time, HH:MM. Defaults to the configured cutoff (09:50, the N2EX GB day-ahead auction)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionViewDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accuracy": {
+      "get": {
+        "tags": [
+          "v1"
+        ],
+        "summary": "Accuracy",
+        "description": "Client question 2: quantified error of the as-of forecasts over a date range.",
+        "operationId": "accuracy_api_v1_accuracy_get",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "First decision day, inclusive.",
+              "title": "From"
+            },
+            "description": "First decision day, inclusive."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Last decision day, inclusive.",
+              "title": "To"
+            },
+            "description": "Last decision day, inclusive."
+          },
+          {
+            "name": "cutoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Local UK gate-closure time, HH:MM. Defaults to the configured cutoff (09:50, the N2EX GB day-ahead auction).",
+              "examples": [
+                "09:50",
+                "09:20"
+              ],
+              "title": "Cutoff"
+            },
+            "description": "Local UK gate-closure time, HH:MM. Defaults to the configured cutoff (09:50, the N2EX GB day-ahead auction)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccuracyReportDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accuracy/export.csv": {
+      "get": {
+        "tags": [
+          "v1"
+        ],
+        "summary": "Accuracy Export",
+        "description": "Every compared hour as CSV, for the desk's own analysis.",
+        "operationId": "accuracy_export_api_v1_accuracy_export_csv_get",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "cutoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Local UK gate-closure time, HH:MM. Defaults to the configured cutoff (09:50, the N2EX GB day-ahead auction).",
+              "examples": [
+                "09:50",
+                "09:20"
+              ],
+              "title": "Cutoff"
+            },
+            "description": "Local UK gate-closure time, HH:MM. Defaults to the configured cutoff (09:50, the N2EX GB day-ahead auction)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccuracyReportDTO": {
+        "properties": {
+          "from_decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "From Decision Date"
+          },
+          "to_decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "To Decision Date"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          },
+          "cutoff_local": {
+            "type": "string",
+            "title": "Cutoff Local"
+          },
+          "days_requested": {
+            "type": "integer",
+            "title": "Days Requested"
+          },
+          "days_compared": {
+            "type": "integer",
+            "title": "Days Compared"
+          },
+          "days_without_forecast": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Days Without Forecast"
+          },
+          "hours_compared": {
+            "type": "integer",
+            "title": "Hours Compared"
+          },
+          "overall": {
+            "$ref": "#/components/schemas/ErrorSummaryDTO"
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BaselineDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "guidance": {
+            "$ref": "#/components/schemas/ProcurementGuidanceDTO"
+          },
+          "band_backtest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BandBacktestDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "daily": {
+            "items": {
+              "$ref": "#/components/schemas/DailyAccuracyDTO"
+            },
+            "type": "array",
+            "title": "Daily"
+          },
+          "by_hour_of_day": {
+            "items": {
+              "$ref": "#/components/schemas/HourOfDayDTO"
+            },
+            "type": "array",
+            "title": "By Hour Of Day"
+          },
+          "by_issue_slot": {
+            "items": {
+              "$ref": "#/components/schemas/IssueSlotDTO"
+            },
+            "type": "array",
+            "title": "By Issue Slot"
+          },
+          "by_forecast_band": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastBandDTO"
+            },
+            "type": "array",
+            "title": "By Forecast Band"
+          },
+          "histogram": {
+            "$ref": "#/components/schemas/HistogramDTO"
+          },
+          "worst_over_forecast_hours": {
+            "items": {
+              "$ref": "#/components/schemas/WorstHourDTO"
+            },
+            "type": "array",
+            "title": "Worst Over Forecast Hours"
+          },
+          "worst_under_forecast_hours": {
+            "items": {
+              "$ref": "#/components/schemas/WorstHourDTO"
+            },
+            "type": "array",
+            "title": "Worst Under Forecast Hours"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_decision_date",
+          "to_decision_date",
+          "timezone",
+          "cutoff_local",
+          "days_requested",
+          "days_compared",
+          "days_without_forecast",
+          "hours_compared",
+          "overall",
+          "baseline",
+          "guidance",
+          "band_backtest",
+          "daily",
+          "by_hour_of_day",
+          "by_issue_slot",
+          "by_forecast_band",
+          "histogram",
+          "worst_over_forecast_hours",
+          "worst_under_forecast_hours"
+        ],
+        "title": "AccuracyReportDTO",
+        "description": "Quantified forecast error over a range of decision days (client question 2)."
+      },
+      "BandBacktestDTO": {
+        "properties": {
+          "target_pct": {
+            "type": "integer",
+            "title": "Target Pct"
+          },
+          "days_checked": {
+            "type": "integer",
+            "title": "Days Checked"
+          },
+          "days_without_history": {
+            "type": "integer",
+            "title": "Days Without History"
+          },
+          "hours_checked": {
+            "type": "integer",
+            "title": "Hours Checked"
+          },
+          "hours_covered": {
+            "type": "integer",
+            "title": "Hours Covered"
+          },
+          "coverage_pct": {
+            "type": "number",
+            "title": "Coverage Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_pct",
+          "days_checked",
+          "days_without_history",
+          "hours_checked",
+          "hours_covered",
+          "coverage_pct"
+        ],
+        "title": "BandBacktestDTO",
+        "description": "Did the out-of-sample 90% band actually cover 90% of hours?"
+      },
+      "BandPointDTO": {
+        "properties": {
+          "target_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Target Time"
+          },
+          "forecast_mw": {
+            "type": "number",
+            "title": "Forecast Mw"
+          },
+          "dependable_mw": {
+            "type": "number",
+            "title": "Dependable Mw",
+            "description": "forecast - P90(error): reached in 9 past hours in 10."
+          },
+          "expected_mw": {
+            "type": "number",
+            "title": "Expected Mw",
+            "description": "forecast - P50(error): median-bias-corrected."
+          },
+          "optimistic_mw": {
+            "type": "number",
+            "title": "Optimistic Mw",
+            "description": "forecast - P10(error): upper edge of the band."
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_time",
+          "forecast_mw",
+          "dependable_mw",
+          "expected_mw",
+          "optimistic_mw"
+        ],
+        "title": "BandPointDTO",
+        "description": "Forecast for one hour with its calibrated range (all MW, floored at zero)."
+      },
+      "BaselineDTO": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "e.g. 'persistence_48h': actual at the same hour two days earlier."
+          },
+          "hours": {
+            "type": "integer",
+            "title": "Hours"
+          },
+          "mae_mw": {
+            "type": "number",
+            "title": "Mae Mw"
+          },
+          "bias_mw": {
+            "type": "number",
+            "title": "Bias Mw"
+          },
+          "skill_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skill Score",
+            "description": "1 - MAE_forecast / MAE_baseline. 0 = no better than naive, 1 = perfect."
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "hours",
+          "mae_mw",
+          "bias_mw",
+          "skill_score"
+        ],
+        "title": "BaselineDTO",
+        "description": "A naive forecast to judge the real one against."
+      },
+      "CalibrationDTO": {
+        "properties": {
+          "window_from_decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Window From Decision Date"
+          },
+          "window_to_decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Window To Decision Date"
+          },
+          "days_used": {
+            "type": "integer",
+            "title": "Days Used"
+          },
+          "hours_used": {
+            "type": "integer",
+            "title": "Hours Used"
+          },
+          "bias_mw": {
+            "type": "number",
+            "title": "Bias Mw"
+          },
+          "p10_mw": {
+            "type": "number",
+            "title": "P10 Mw"
+          },
+          "p50_mw": {
+            "type": "number",
+            "title": "P50 Mw"
+          },
+          "p90_mw": {
+            "type": "number",
+            "title": "P90 Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "window_from_decision_date",
+          "window_to_decision_date",
+          "days_used",
+          "hours_used",
+          "bias_mw",
+          "p10_mw",
+          "p50_mw",
+          "p90_mw"
+        ],
+        "title": "CalibrationDTO",
+        "description": "Error quantiles learned only from delivery days completed before the decision."
+      },
+      "CoverageOptionDTO": {
+        "properties": {
+          "confidence_pct": {
+            "type": "integer",
+            "title": "Confidence Pct"
+          },
+          "buffer_mw": {
+            "type": "number",
+            "title": "Buffer Mw"
+          },
+          "pct_of_mean_actual": {
+            "type": "number",
+            "title": "Pct Of Mean Actual"
+          }
+        },
+        "type": "object",
+        "required": [
+          "confidence_pct",
+          "buffer_mw",
+          "pct_of_mean_actual"
+        ],
+        "title": "CoverageOptionDTO",
+        "description": "Buffer needed to be covered in ``confidence_pct`` of hours."
+      },
+      "DailyAccuracyDTO": {
+        "properties": {
+          "decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Decision Date"
+          },
+          "delivery_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Date"
+          },
+          "issue_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issue Time"
+          },
+          "hours_compared": {
+            "type": "integer",
+            "title": "Hours Compared"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorSummaryDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "energy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EnergyDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision_date",
+          "delivery_date",
+          "issue_time",
+          "hours_compared",
+          "summary",
+          "energy"
+        ],
+        "title": "DailyAccuracyDTO",
+        "description": "Accuracy of the as-of forecast for one decision day."
+      },
+      "DecisionDayDTO": {
+        "properties": {
+          "decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Decision Date"
+          },
+          "delivery_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Date"
+          },
+          "selected_issue_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Issue Time"
+          },
+          "hours_with_actuals": {
+            "type": "integer",
+            "title": "Hours With Actuals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision_date",
+          "delivery_date",
+          "selected_issue_time",
+          "hours_with_actuals"
+        ],
+        "title": "DecisionDayDTO",
+        "description": "One row of the decision-day index."
+      },
+      "DecisionDaysDTO": {
+        "properties": {
+          "cutoff_local": {
+            "type": "string",
+            "title": "Cutoff Local"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionDayDTO"
+            },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cutoff_local",
+          "days"
+        ],
+        "title": "DecisionDaysDTO",
+        "description": "All decision days in scope."
+      },
+      "DecisionViewDTO": {
+        "properties": {
+          "decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Decision Date"
+          },
+          "delivery_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Date"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          },
+          "cutoff_local": {
+            "type": "string",
+            "title": "Cutoff Local"
+          },
+          "cutoff_utc": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff Utc"
+          },
+          "delivery_window": {
+            "$ref": "#/components/schemas/WindowDTO"
+          },
+          "selected_issue": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IssueDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/IssueDTO"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
+          "calibration": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CalibrationDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "band": {
+            "items": {
+              "$ref": "#/components/schemas/BandPointDTO"
+            },
+            "type": "array",
+            "title": "Band"
+          },
+          "dependable_energy_mwh": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dependable Energy Mwh",
+            "description": "Sum of dependable_mw over the delivery day; None without calibration."
+          },
+          "actuals_half_hourly": {
+            "items": {
+              "$ref": "#/components/schemas/PointDTO"
+            },
+            "type": "array",
+            "title": "Actuals Half Hourly"
+          },
+          "actuals_hourly": {
+            "items": {
+              "$ref": "#/components/schemas/HourlyActualDTO"
+            },
+            "type": "array",
+            "title": "Actuals Hourly"
+          },
+          "comparison": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorPairDTO"
+            },
+            "type": "array",
+            "title": "Comparison"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorSummaryDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BaselineDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "energy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EnergyDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision_date",
+          "delivery_date",
+          "timezone",
+          "cutoff_local",
+          "cutoff_utc",
+          "delivery_window",
+          "selected_issue",
+          "issues",
+          "calibration",
+          "band",
+          "dependable_energy_mwh",
+          "actuals_half_hourly",
+          "actuals_hourly",
+          "comparison",
+          "summary",
+          "baseline",
+          "energy",
+          "notes"
+        ],
+        "title": "DecisionViewDTO",
+        "description": "Everything the desk needs for one decision day (client question 1)."
+      },
+      "EnergyDTO": {
+        "properties": {
+          "hours": {
+            "type": "integer",
+            "title": "Hours"
+          },
+          "forecast_mwh": {
+            "type": "number",
+            "title": "Forecast Mwh"
+          },
+          "actual_mwh": {
+            "type": "number",
+            "title": "Actual Mwh"
+          },
+          "error_mwh": {
+            "type": "number",
+            "title": "Error Mwh"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hours",
+          "forecast_mwh",
+          "actual_mwh",
+          "error_mwh"
+        ],
+        "title": "EnergyDTO",
+        "description": "Daily energy totals over the hours that could be compared."
+      },
+      "ErrorPairDTO": {
+        "properties": {
+          "target_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Target Time"
+          },
+          "forecast_mw": {
+            "type": "number",
+            "title": "Forecast Mw"
+          },
+          "actual_mw": {
+            "type": "number",
+            "title": "Actual Mw"
+          },
+          "error_mw": {
+            "type": "number",
+            "title": "Error Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_time",
+          "forecast_mw",
+          "actual_mw",
+          "error_mw"
+        ],
+        "title": "ErrorPairDTO",
+        "description": "Forecast vs actual for one hour. ``error_mw = forecast_mw - actual_mw``."
+      },
+      "ErrorSummaryDTO": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "mean_actual_mw": {
+            "type": "number",
+            "title": "Mean Actual Mw"
+          },
+          "mean_forecast_mw": {
+            "type": "number",
+            "title": "Mean Forecast Mw"
+          },
+          "bias_mw": {
+            "type": "number",
+            "title": "Bias Mw"
+          },
+          "mae_mw": {
+            "type": "number",
+            "title": "Mae Mw"
+          },
+          "rmse_mw": {
+            "type": "number",
+            "title": "Rmse Mw"
+          },
+          "nmae_pct": {
+            "type": "number",
+            "title": "Nmae Pct"
+          },
+          "p10_mw": {
+            "type": "number",
+            "title": "P10 Mw"
+          },
+          "p50_mw": {
+            "type": "number",
+            "title": "P50 Mw"
+          },
+          "p90_mw": {
+            "type": "number",
+            "title": "P90 Mw"
+          },
+          "max_over_forecast_mw": {
+            "type": "number",
+            "title": "Max Over Forecast Mw"
+          },
+          "max_under_forecast_mw": {
+            "type": "number",
+            "title": "Max Under Forecast Mw"
+          },
+          "buffer_p90_mw": {
+            "type": "number",
+            "title": "Buffer P90 Mw",
+            "description": "MW to add on top of the forecast to be covered in 90% of hours."
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "mean_actual_mw",
+          "mean_forecast_mw",
+          "bias_mw",
+          "mae_mw",
+          "rmse_mw",
+          "nmae_pct",
+          "p10_mw",
+          "p50_mw",
+          "p90_mw",
+          "max_over_forecast_mw",
+          "max_under_forecast_mw",
+          "buffer_p90_mw"
+        ],
+        "title": "ErrorSummaryDTO",
+        "description": "Error statistics. Positive error means the forecast was higher than reality."
+      },
+      "ForecastBandDTO": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "lower_mw": {
+            "type": "number",
+            "title": "Lower Mw"
+          },
+          "upper_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upper Mw",
+            "description": "None for the open-ended top band."
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ErrorSummaryDTO"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "lower_mw",
+          "upper_mw",
+          "summary"
+        ],
+        "title": "ForecastBandDTO",
+        "description": "Accuracy for hours whose forecast fell in ``[lower_mw, upper_mw)``."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthDTO": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "forecast_issues": {
+            "type": "integer",
+            "title": "Forecast Issues"
+          },
+          "actual_points": {
+            "type": "integer",
+            "title": "Actual Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "forecast_issues",
+          "actual_points"
+        ],
+        "title": "HealthDTO",
+        "description": "Liveness response."
+      },
+      "HistogramBinDTO": {
+        "properties": {
+          "lower_mw": {
+            "type": "number",
+            "title": "Lower Mw"
+          },
+          "upper_mw": {
+            "type": "number",
+            "title": "Upper Mw"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lower_mw",
+          "upper_mw",
+          "count"
+        ],
+        "title": "HistogramBinDTO",
+        "description": "Half-open bin ``[lower_mw, upper_mw)``."
+      },
+      "HistogramDTO": {
+        "properties": {
+          "bin_width_mw": {
+            "type": "number",
+            "title": "Bin Width Mw"
+          },
+          "bins": {
+            "items": {
+              "$ref": "#/components/schemas/HistogramBinDTO"
+            },
+            "type": "array",
+            "title": "Bins"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bin_width_mw",
+          "bins"
+        ],
+        "title": "HistogramDTO",
+        "description": "Distribution of signed hourly errors."
+      },
+      "HourOfDayDTO": {
+        "properties": {
+          "hour": {
+            "type": "integer",
+            "title": "Hour"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ErrorSummaryDTO"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hour",
+          "summary"
+        ],
+        "title": "HourOfDayDTO",
+        "description": "Accuracy for one local hour of the day across all compared days."
+      },
+      "HourlyActualDTO": {
+        "properties": {
+          "target_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Target Time"
+          },
+          "generation_mw": {
+            "type": "number",
+            "title": "Generation Mw"
+          },
+          "periods_used": {
+            "type": "integer",
+            "title": "Periods Used"
+          },
+          "is_complete": {
+            "type": "boolean",
+            "title": "Is Complete"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_time",
+          "generation_mw",
+          "periods_used",
+          "is_complete"
+        ],
+        "title": "HourlyActualDTO",
+        "description": "Hourly-mean actual with completeness information."
+      },
+      "IssueDTO": {
+        "properties": {
+          "issue_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Issue Time"
+          },
+          "slot_label": {
+            "type": "string",
+            "title": "Slot Label",
+            "description": "Local wall-clock publication time, e.g. '09:30'."
+          },
+          "available_at_cutoff": {
+            "type": "boolean",
+            "title": "Available At Cutoff"
+          },
+          "minutes_before_cutoff": {
+            "type": "integer",
+            "title": "Minutes Before Cutoff",
+            "description": "Positive when published before the cutoff, negative when after."
+          },
+          "coverage_hours": {
+            "type": "integer",
+            "title": "Coverage Hours",
+            "description": "Hours of the delivery day this issue covers."
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/PointDTO"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "issue_time",
+          "slot_label",
+          "available_at_cutoff",
+          "minutes_before_cutoff",
+          "coverage_hours",
+          "points"
+        ],
+        "title": "IssueDTO",
+        "description": "One forecast publication restricted to the delivery day."
+      },
+      "IssueSlotDTO": {
+        "properties": {
+          "slot_label": {
+            "type": "string",
+            "title": "Slot Label"
+          },
+          "available_at_cutoff": {
+            "type": "boolean",
+            "title": "Available At Cutoff"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ErrorSummaryDTO"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slot_label",
+          "available_at_cutoff",
+          "days",
+          "summary"
+        ],
+        "title": "IssueSlotDTO",
+        "description": "Accuracy if the desk had used the issue published at this slot on the decision day."
+      },
+      "MetaDTO": {
+        "properties": {
+          "app_name": {
+            "type": "string",
+            "title": "App Name"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          },
+          "first_decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "First Decision Date"
+          },
+          "last_decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Last Decision Date"
+          },
+          "default_cutoff_local": {
+            "type": "string",
+            "title": "Default Cutoff Local"
+          },
+          "calibration_lookback_days": {
+            "type": "integer",
+            "title": "Calibration Lookback Days"
+          },
+          "calibration_min_days": {
+            "type": "integer",
+            "title": "Calibration Min Days"
+          },
+          "persistence_lag_hours": {
+            "type": "integer",
+            "title": "Persistence Lag Hours"
+          },
+          "forecast_issue_count": {
+            "type": "integer",
+            "title": "Forecast Issue Count"
+          },
+          "actual_point_count": {
+            "type": "integer",
+            "title": "Actual Point Count"
+          },
+          "snapshot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SnapshotDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "app_name",
+          "version",
+          "environment",
+          "timezone",
+          "first_decision_date",
+          "last_decision_date",
+          "default_cutoff_local",
+          "calibration_lookback_days",
+          "calibration_min_days",
+          "persistence_lag_hours",
+          "forecast_issue_count",
+          "actual_point_count",
+          "snapshot",
+          "assumptions"
+        ],
+        "title": "MetaDTO",
+        "description": "Scope, defaults and provenance, shown in the app footer and About page."
+      },
+      "PointDTO": {
+        "properties": {
+          "target_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Target Time"
+          },
+          "generation_mw": {
+            "type": "number",
+            "title": "Generation Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_time",
+          "generation_mw"
+        ],
+        "title": "PointDTO",
+        "description": "A timestamped MW value."
+      },
+      "ProcurementGuidanceDTO": {
+        "properties": {
+          "bias_mw": {
+            "type": "number",
+            "title": "Bias Mw"
+          },
+          "buffer_p90_mw": {
+            "type": "number",
+            "title": "Buffer P90 Mw"
+          },
+          "buffer_p90_pct_of_mean_actual": {
+            "type": "number",
+            "title": "Buffer P90 Pct Of Mean Actual"
+          },
+          "coverage_options": {
+            "items": {
+              "$ref": "#/components/schemas/CoverageOptionDTO"
+            },
+            "type": "array",
+            "title": "Coverage Options"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bias_mw",
+          "buffer_p90_mw",
+          "buffer_p90_pct_of_mean_actual",
+          "coverage_options",
+          "explanation"
+        ],
+        "title": "ProcurementGuidanceDTO",
+        "description": "Plain-language translation of the statistics into a buying rule."
+      },
+      "SnapshotDTO": {
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "source_base_url": {
+            "type": "string",
+            "title": "Source Base Url"
+          },
+          "windfor": {
+            "$ref": "#/components/schemas/SnapshotFileDTO"
+          },
+          "fuelhh": {
+            "$ref": "#/components/schemas/SnapshotFileDTO"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "created_at",
+          "source_base_url",
+          "windfor",
+          "fuelhh",
+          "notes"
+        ],
+        "title": "SnapshotDTO",
+        "description": "Provenance of the data the app is serving."
+      },
+      "SnapshotFileDTO": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "row_count": {
+            "type": "integer",
+            "title": "Row Count"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "endpoint": {
+            "type": "string",
+            "title": "Endpoint"
+          },
+          "params": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Params"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "row_count",
+          "sha256",
+          "endpoint",
+          "params"
+        ],
+        "title": "SnapshotFileDTO",
+        "description": "Provenance of one snapshot file."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WindowDTO": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "WindowDTO",
+        "description": "A half-open UTC time window ``[start, end)``."
+      },
+      "WorstHourDTO": {
+        "properties": {
+          "decision_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Decision Date"
+          },
+          "delivery_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Date"
+          },
+          "target_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Target Time"
+          },
+          "forecast_mw": {
+            "type": "number",
+            "title": "Forecast Mw"
+          },
+          "actual_mw": {
+            "type": "number",
+            "title": "Actual Mw"
+          },
+          "error_mw": {
+            "type": "number",
+            "title": "Error Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision_date",
+          "delivery_date",
+          "target_time",
+          "forecast_mw",
+          "actual_mw",
+          "error_mw"
+        ],
+        "title": "WorstHourDTO",
+        "description": "An extreme hour, linked back to the decision day that produced it."
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-26T07:35:15.762436Z",
+  "source_base_url": "https://data.elexon.co.uk/bmrs/api/v1",
+  "windfor": {
+    "file": "windfor.json",
+    "row_count": 29784,
+    "sha256": "8a367fdc0729a9e887594c7b29aa90f3ee4477ce6182553096211d45a69fac7d",
+    "endpoint": "/datasets/WINDFOR/stream",
+    "params": {
+      "publishDateTimeFrom": "2025-12-14T00:00:00Z",
+      "publishDateTimeTo": "2026-02-03T00:00:00Z"
+    }
+  },
+  "fuelhh": {
+    "file": "fuelhh_wind.json",
+    "row_count": 2304,
+    "sha256": "1494cb0ab0245643d2d87a1277fcdc4bffab9046c089b19c118745c20a841467",
+    "endpoint": "/datasets/FUELHH/stream",
+    "params": {
+      "settlementDateFrom": "2025-12-16",
+      "settlementDateTo": "2026-02-01",
+      "fuelType": "WIND"
+    }
+  },
+  "notes": [
+    "WINDFOR is NESO's national wind generation forecast for transmission-connected wind (Power Park Modules), hourly, published several times a day.",
+    "FUELHH fuelType=WIND is the measured half-hourly average MW of transmission-metered wind. Embedded (distribution-connected) wind is not included in either dataset.",
+    "Actual generation includes the effect of curtailment instructed by the system operator, which the forecast does not model; part of any forecast-minus-actual gap is operational."
+  ]
+}

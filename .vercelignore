@@ -1,0 +1,11 @@
+backend/.venv
+backend/tests
+backend/.pytest_cache
+backend/.mypy_cache
+backend/.ruff_cache
+backend/htmlcov
+backend/coverage.xml
+frontend/node_modules
+docker
+docs
+.github

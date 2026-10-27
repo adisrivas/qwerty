@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+dist/
+build/
+*.egg-info/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/coverage/
+.eslintcache
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Local tooling
+.claude/
+.import_linter_cache/
+.vercel
+.env*
